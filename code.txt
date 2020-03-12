@@ -1,0 +1,57 @@
+1.
+select dorm_name, dorm_location, dorm_price
+from dorm
+where dorm_price > (select avg(dorm_price) from dorm);
+
+2.
+select d.dorm_name, d.dorm_type, d.dorm_price
+from dorm d, 
+(select avg(dorm_price) avg_dormprice
+from dorm group by dorm_location) a
+where d.dorm_price = a.avg_dormprice;
+
+
+3.
+select d.dorm_roomno, su.sup_id
+from sup_dorm su, dorm d
+group by d.dorm_roomno, su.sup_id
+having avg(d.dorm_roomno) < all(select avg(sup_id) from dorm where dorm_roomno= 7777);
+
+4.
+
+select stu_gender, stu_firstname, ss.studservice_id 
+from student s join stud_service ss using(stu_id) where stu_category in 
+(select stu_category from student group by stu_category having count(stu_id) in
+(select count(stu_id) from student group by stu_category));
+
+5.
+select stu_firstname, stu_lastname, sr.service_name
+from student s join stud_service ss using (stu_id) 
+join service_request sr using(service_id)  where sr.service_name in (select service_name from service_request where service_name like '%Rep%');
+
+6.
+select su.sup_firstname, su.sup_lastname, dorm_roomno, 
+decode(d.dorm_price, 800,  'Single Room', 1200, 'Double Room', 1400, 'Triple Room') DormType 
+from supervisor su join sup_dorm sd using(sup_id) join dorm d using (dorm_roomno);
+
+
+
+7.-----------
+
+8.
+create table bonus
+(f_id number(6), bonus number(6) default 1000,
+constraint f_id_pk primary key(f_id));
+
+
+9.-------------
+
+10.
+merge into bonus b
+using (select distinct(F_SUPER) from faculty) fs
+on (b.f_id = fs.f_super)
+when matched then 
+update set b.bonus = b.bonus*1.01
+when not matched then
+insert (f_id) values(fs.f_super)
+where fs.f_super is not null;
